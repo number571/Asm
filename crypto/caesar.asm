@@ -1,5 +1,5 @@
 section .bss
-    _buff resb 1
+    _buff resb 4
 
 section .text
     global copy, caesar

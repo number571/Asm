@@ -1,30 +1,39 @@
 section .text
-	global _start
+    global _start
 
 section .bss
-	buff resb 20
+    _len resb 4
+    buff resb 20
 
 section .data
-	msg db "hello, world", 0xA, 0
-	len equ $-msg
+    msg db "hello, world", 0xA, 0
+    len equ $-msg
+
+copy:
+    mov [_len], ecx
+    xor edx, edx
+
+    __lp:
+        mov ecx, [ebx+edx]
+        mov [eax+edx], ecx 
+
+        inc edx
+        cmp edx, [_len]
+        jne __lp
+
+    ret
 
 _start:
-	xor ecx, ecx
+    mov eax, buff
+    mov ebx, msg
+    mov ecx, len
+    call copy
 
-	lp:
-		mov eax, [msg+ecx]
-		mov [buff+ecx], eax 
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, buff
+    int 0x80
 
-		inc ecx
-		cmp ecx, len
-		jne lp
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, buff
-	mov edx, len
-	int 0x80
-
-	mov eax, 1
-	mov ebx, 0
-	int 0x80
+    mov eax, 1
+    mov ebx, 0
+    int 0x80

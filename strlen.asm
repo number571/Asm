@@ -7,6 +7,8 @@ section .data
 strlen:
     xor edx, edx
     _loop:
+        ; lea ecx, [eax+edx]
+        ; cmp byte[ecx], 0
         cmp byte[eax+edx], 0
         je _end
         inc edx

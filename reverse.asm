@@ -2,19 +2,20 @@ section .text
     global _start
 
 section .bss
-    buffer resb 50
+    buff resb 20
 
 section .data
-    msg db "hello", 0
+    msg db "hello, world!", 0
     len equ $-msg
 
-_start:
-    mov ecx, len-1
-    mov edx, 0
+reverse:
+    mov esi, eax
+    mov edi, ebx
 
+    xor edx, edx
     _loop:
-        mov eax, [msg+ecx]
-        mov [buffer+edx], eax
+        mov eax, [edi+ecx]
+        mov [esi+edx], eax
 
         inc edx
         dec ecx
@@ -22,12 +23,19 @@ _start:
         cmp ecx, -1
         jne _loop
 
-    mov eax, 0xA
-    mov [buffer+edx], eax
+    ret
+
+_start:
+    mov eax, buff
+    mov ebx, msg
+    mov ecx, len-1
+    call reverse
+
+    mov byte[buff+edx], 0xA
 
     mov eax, 4
     mov ebx, 1
-    mov ecx, buffer
+    mov ecx, buff
     mov edx, len+1
     int 0x80
 
