@@ -28,6 +28,7 @@ reverse:
 
 to_string:
     xor edi, edi
+    inc edi
 
     _loop:
         xor edx, edx
@@ -41,7 +42,9 @@ to_string:
         cmp eax, 0
         jne _loop
 
+    mov byte[_buff], 0
     mov edx, edi
+    inc edx
 
     mov eax, ebx
     mov ebx, _buff
