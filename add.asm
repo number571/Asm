@@ -1,77 +1,100 @@
+section .text
+    global _start
+
 section .bss
-	num1 resb 2
-	num2 resb 2
-	res resb 1
+    result resb 10
 
 section .data
-	msg1 db "Write first number: ", 0
-	len1 equ $-msg1
-
-	msg2 db "Write second number: ", 0
-	len2 equ $-msg2
-
-	msg3 db "Result of (a + b) = ", 0
-	len3 equ $-msg3
-
-	newline db 0xA
-
-section .text
-	global _start
-
+    n1 db "111", 0
+    n2 db "222", 0
+    
 _start:
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, msg1
-	mov edx, len1
-	int 0x80
+    lea rsi, [n1]
+    mov rcx, 3
+    call to_number
 
-	mov eax, 3
-	mov ebx, 2
-	mov ecx, num1
-	mov edx, 2
-	int 0x80
+    mov [result], rax
 
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, msg2
-	mov edx, len2
-	int 0x80
+    lea rsi, [n2]
+    mov rcx, 3
+    call to_number
 
-	mov eax, 3
-	mov ebx, 2
-	mov ecx, num2
-	mov edx, 2
-	int 0x80
+    ; sum
+    add rax, [result]
+    lea rsi, [result]
+    call to_string
 
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, msg3
-	mov edx, len3
-	int 0x80
+    ; print result
+    mov rax, 4
+    mov rbx, 1
+    mov rcx, result
+    mov rdx, 10
+    int 0x80
 
-	mov eax, [num1]
-	sub eax, '0'
+    call newline
+    call exit
 
-	mov ebx, [num2]
-	sub ebx, '0'
+; input:
+; - rsi = string
+; - rcx = length
+; output:
+; - rax = number
+to_number:
+    xor rax, rax
+    cmp rcx, 0
+    je .end
+    .next_value:
+        dec rcx
+        movzx rbx, byte[rsi]
+        inc rsi
+        sub rbx, '0'
+        add rax, rbx
+        cmp rcx, 0
+        je .end
+        mov rbx, 10
+        mul rbx
+        jmp .next_value
+    .end:
+        ret
 
-	add eax, ebx
-	add eax, '0'
+; input:
+; - rax = number
+; - rsi = buffer
+; output:
+; - rcx = length
+to_string:
+    xor rcx, rcx
+    .push_digit:
+        xor rdx, rdx
+        mov rbx, 10
+        div rbx
+        add rdx, '0'
+        push rdx
+        inc rcx
+        cmp rax, 0
+        je .pop_digit
+        jmp .push_digit
+    .pop_digit:
+        cmp rax, rcx
+        je .end
+        pop rdx
+        mov [rsi+rax], rdx
+        inc rax
+        jmp .pop_digit
+    .end:
+        mov rdx, 0
+        mov [rsi+rax], rdx
+        ret
 
-	mov [res], eax
+newline:
+    mov rax, 4
+    mov rbx, 1
+    mov byte[rcx], 0xA
+    mov rdx, 1
+    int 0x80
 
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, res
-	mov edx, 1
-	int 0x80
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, newline
-	mov edx, 1
-	int 0x80
-
-	mov eax, 1
-	mov ebx, 0
-	int 0x80
+exit:
+    xor rax, rax
+    inc rax
+    xor rbx, rbx
+    int 0x80
