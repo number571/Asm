@@ -3,8 +3,8 @@
 ; rcx = length
 copy:
     .next_value:
-        push word [rbx+rcx]
-        pop word [rax+rcx]
+        mov rdx, [rbx+rcx]
+        mov [rax+rcx], rdx
         cmp rcx, 0
         je .end
         dec rcx
