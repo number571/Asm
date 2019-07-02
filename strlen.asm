@@ -1,30 +1,14 @@
-section .text
-    global _start
-
-section .data
-    msg db "hello, world", 0xA, 0
-
+; input:
+; - eax = string
+; output:
+; - eax = length
 strlen:
-    xor edx, edx
-    _loop:
-        ; lea ecx, [eax+edx]
-        ; cmp byte[ecx], 0
-        cmp byte[eax+edx], 0
-        je _end
-        inc edx
-        jmp _loop
-    _end:
-    ret
-
-_start:
-    mov eax, msg
-    call strlen
-
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, msg
-    int 0x80
-
-    mov eax, 1
-    xor ebx, ebx
-    int 0x80
+    mov ebx, eax
+    .next_iter:
+        cmp byte[eax], 0
+        je .end
+        inc eax
+        jne .next_iter
+    .end:
+        sub eax, ebx
+        ret
