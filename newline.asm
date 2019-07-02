@@ -4,3 +4,4 @@ newline:
     mov byte[rcx], 0xA
     mov rdx, 1
     int 0x80
+    ret 
