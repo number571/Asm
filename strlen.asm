@@ -1,14 +1,14 @@
 ; input:
-; - eax = string
+; - rax = string
 ; output:
-; - eax = length
+; - rax = length
 strlen:
-    mov ebx, eax
+    mov rbx, rax
     .next_iter:
-        cmp byte[eax], 0
+        cmp byte[rax], 0
         je .end
-        inc eax
+        inc rax
         jne .next_iter
     .end:
-        sub eax, ebx
+        sub rax, rbx
         ret
