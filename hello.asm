@@ -1,17 +1,21 @@
-section .text
-    global _start
+format ELF64
+public _start
 
-section .data
+section '.data' writable
     msg db "hello, world", 0xA, 0
-    len equ $-msg
+    len = $-msg
 
+section '.code' executable
 _start:
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, msg
-    mov edx, len
+    mov rax, 4
+    mov rbx, 1
+    mov rcx, msg
+    mov rdx, len 
     int 0x80
 
-    mov eax, 1
-    mov ebx, 0
+    call exit
+
+exit:
+    mov rax, 1
+    xor rbx, rbx
     int 0x80
