@@ -20,14 +20,13 @@ to_string:
         je .pop_digit
         jmp .push_digit
     .pop_digit:
-        xor rax, rax
-        .pop_digit_iter:
-            cmp rax, rcx
-            je .end
-            pop rdx
-            mov [rsi+rax], rdx
-            inc rax
-            jmp .pop_digit_iter
+        cmp rcx, 0
+        je .end
+        pop rdx
+        mov [rsi], rdx
+        inc rsi
+        dec rcx
+        jmp .pop_digit
     .end:
         mov rdx, 0
         mov [rsi+rax], rdx
