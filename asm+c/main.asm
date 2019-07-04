@@ -1,13 +1,27 @@
 format ELF64
 
+public factorial
 public input_number
 public print_number
 
 section '.bss' writable
-	buffsize equ 20
+    buffsize equ 20
     buffer rb buffsize
 
 section '.text' executable
+
+factorial:
+    mov rbx, rdi
+    mov rax, 1
+    .next_iter:
+        cmp rbx, 1
+        jle .end
+        mul rbx
+        dec rbx
+        jmp .next_iter
+    .end:
+        ret
+
 input_number:
     mov rax, 0
     mov rdi, 2
@@ -22,16 +36,16 @@ input_number:
     ret
 
 print_number:
-	mov rax, rdi
-	mov rsi, buffer
+    mov rax, rdi
+    mov rsi, buffer
     mov rcx, buffsize
-	call to_string
+    call to_string
 
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, buffer
-	mov rdx, buffsize
-	syscall
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, buffer
+    mov rdx, buffsize
+    syscall
 
     mov rax, 1
     mov byte[rsi], 0xA
