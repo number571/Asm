@@ -15,6 +15,8 @@ to_number:
         add rax, rbx
         cmp rcx, 0
         je .end
+        cmp byte[rsi], 0xA
+        je .end
         mov rbx, 10
         mul rbx
         jmp .next_value
