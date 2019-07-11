@@ -1,71 +1,41 @@
-section .bss
-    _buff resb 4
+format ELF64 executable
+entry _start
 
-section .text
-    global copy, caesar
+msg db "HELLO", 0xA, 0
+len = $-msg
 
-; eax, buff
-; ebx, msg
-; ecx, len
-copy:
-    mov [_buff], ecx
-    xor ecx, ecx
+macro caesar mode, msg, key, len {
+    x = 0
+    while x <> len
+        xor ax, ax
+        mov al, [msg+x]
+        if mode = 'e'
+            add al, key
+        else
+            sub al, key
+        end if
+        sub al, 13
+        mov bl, 26
+        div bl
+        mov al, ah
+        add al, 'A'
+        mov [msg+x], al
+        x = x + 1
+    end while
+}
 
-    __lp:
-        mov edx, [ebx+ecx]
-        mov [eax+ecx], edx 
+_start:
+    caesar 'e', msg, 3, len-2
 
-        inc ecx
-        cmp ecx, [_buff]
-        jne __lp
+    mov rax, 4
+    mov rbx, 1
+    mov rcx, msg
+    mov rdx, len
+    int 0x80
 
-    ret
+    call exit
 
-; eax, buff
-; ebx, key
-; ecx, len
-; edx, 1 ; -1
-caesar:
-    cmp edx, 1
-    je _encrypt
-
-    cmp edx, -1
-    je _decrypt
-
-    ret
-
-; eax, buff
-; ebx, key
-; ecx, len
-_encrypt:
-    mov [_buff], ecx
-    xor ecx, ecx
-
-    __enc_loop:
-        mov edx, [eax+ecx]
-        add edx, ebx
-        mov [eax+ecx], edx
-
-        inc ecx
-        cmp ecx, [_buff]
-        jne __enc_loop
-    
-    ret
-
-; eax, buff
-; ebx, key
-; ecx, len
-_decrypt:
-    mov [_buff], ecx
-    xor ecx, ecx
-
-    __dec_loop:
-        mov edx, [eax+ecx]
-        sub edx, ebx
-        mov [eax+ecx], edx
-
-        inc ecx
-        cmp ecx, [_buff]
-        jne __dec_loop
-    
-    ret
+exit:
+    mov rax, 1
+    mov rbx, 0
+    int 0x80
