@@ -17,9 +17,8 @@ macro caesar mode, msg, key, len {
         sub al, 13
         mov bl, 26
         div bl
-        mov al, ah
-        add al, 'A'
-        mov [msg+x], al
+        add ah, 'A'
+        mov [msg+x], ah
         x = x + 1
     end while
 }
