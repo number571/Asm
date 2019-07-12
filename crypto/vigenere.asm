@@ -1,15 +1,15 @@
 format ELF64 executable
 entry _start
 
-msg db "HELLOHELLO", 0xA, 0
-len = $-msg
-
-key db "WORLD", 0
+    key db "WORLD", 0
+    msg db "HELLOHELLO", 0xA, 0
+    len = $-msg
 
 macro vigenere mode, msg, key, len {
     local _iter, _end
     x = 0
 
+; Key's length
     mov rax, key
     mov rdx, 0
 _iter:
@@ -21,6 +21,7 @@ _end:
 
     xor rcx, rcx
     while x <> len
+        ; Encryption
         xor ax, ax
         mov al, [msg+x]
         if mode = 'e'
@@ -33,7 +34,9 @@ _end:
         div bl
         add ah, 'A'
         mov [msg+x], ah
+        x = x + 1
 
+        ; Key extension
         inc rcx
         push rdx
         mov rax, rcx
@@ -42,8 +45,6 @@ _end:
         div rcx
         mov rcx, rdx
         pop rdx
-
-        x = x + 1
     end while
 }
 
