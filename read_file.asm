@@ -15,6 +15,7 @@ macro print msg, len {
 }
 
 _start:
+    ; Open
     mov rax, 5
     mov rbx, filename
     mov rcx, 0
@@ -26,10 +27,16 @@ _start:
     ; descriptor
     push rax
 
+    ; Read
     mov rax, 3
     pop rbx
     mov rcx, buffer
     mov rdx, buffsize
+    int 0x80
+
+    ; Close
+    mov rax, 6
+    ; rbx = descriptor
     int 0x80
 
     print buffer, buffsize
