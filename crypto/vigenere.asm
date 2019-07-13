@@ -6,46 +6,52 @@ entry _start
     len = $-msg
 
 macro vigenere mode, msg, key, len {
-    local _iter, _end
-    x = 0
-
 ; Key's length
-    mov rax, key
     mov rdx, 0
-_iter:
-    cmp byte[rax+rdx], 0
-    je _end
+@@:
+    cmp byte[key+rdx], 0
+    je @f
     inc rdx
-    jmp _iter
-_end:
+    jmp @b
+@@:
 
+; Default values
     xor rcx, rcx
-    while x <> len
-        ; Encryption
-        xor ax, ax
-        mov al, [msg+x]
-        if mode = 'e'
-            add al, [key+rcx]
-        else
-            sub al, [key+rcx]
-            add al, 26
-        end if
-        mov bl, 26
-        div bl
-        add ah, 'A'
-        mov [msg+x], ah
-        x = x + 1
+    xor rbx, rbx
+    push rbx
+@@:
+; Encryption
+    pop rbx
+    cmp rbx, len
+    je @f
+    push rbx
+    xor ax, ax
+    mov al, [msg+rbx]
+    if mode = 'e'
+        add al, [key+rcx]
+    else
+        sub al, [key+rcx]
+        add al, 26
+    end if
+    mov bl, 26
+    div bl
+    add ah, 'A'
+    pop rbx
+    mov [msg+rbx], ah
+    inc rbx
+    push rbx
 
-        ; Key extension
-        inc rcx
-        push rdx
-        mov rax, rcx
-        mov rcx, rdx
-        xor rdx, rdx
-        div rcx
-        mov rcx, rdx
-        pop rdx
-    end while
+; Key extension
+    inc rcx
+    push rdx
+    mov rax, rcx
+    mov rcx, rdx
+    xor rdx, rdx
+    div rcx
+    mov rcx, rdx
+    pop rdx
+    jmp @b
+@@:
 }
 
 macro print msg, len {
