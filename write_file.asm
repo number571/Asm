@@ -6,6 +6,7 @@ contents db "hello, world", 0xA, 0
 length = $-contents
 
 _start:
+    ; Create
     mov rax, 8
     mov rbx, filename
     mov rcx, 0777
@@ -14,11 +15,16 @@ _start:
     ; descriptor
     push rax
 
-    mov rbx, rax
+    ; Write
     mov rax, 4
     pop rbx
     mov rcx, contents
     mov rdx, length
+    int 0x80
+    
+    ; Close
+    mov rax, 6
+    ; rbx = descriptor
     int 0x80
 
     call exit
