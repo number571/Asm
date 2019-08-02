@@ -12,6 +12,8 @@ section '.print_number' executable
 ; rax = number
 ; rbx = length 
 print_number:
+	push rax
+	push rbx
 	mov rcx, rbx
 	.next_iter:
 		cmp rbx, 0
@@ -29,26 +31,34 @@ print_number:
 		cmp rcx, 0
 		jle .close
 		pop rax
-		push rcx
 		call print_char
-		pop rcx
 		dec rcx
 		jmp .print_iter
 	.close:
 		mov rax, 0xA
 		call print_char
+		pop rbx
+		pop rax
 		ret
 
 section '.print_char' executable
 ; rax = char
 print_char:
+	push rdx
+	push rcx
+	push rbx
 	push rax
+
 	mov rax, 1
 	mov rdi, 1
 	mov rsi, rsp
 	mov rdx, 1
 	syscall
+
 	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
 	ret
 
 section '.exit' executable
