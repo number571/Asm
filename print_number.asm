@@ -46,7 +46,6 @@ section '.print_char' executable
 print_char:
 	push rdx
 	push rcx
-	push rbx
 	push rax
 
 	mov rax, 1
@@ -56,7 +55,6 @@ print_char:
 	syscall
 
 	pop rax
-	pop rbx
 	pop rcx
 	pop rdx
 	ret
