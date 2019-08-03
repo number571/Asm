@@ -13,12 +13,20 @@ _start:
 section '.print_string' executable
 ; rax = string
 print_string:
+	push rax
+	push rbx
+	push rcx
+	
 	call length_string
 	mov rdx, rbx
 	mov rcx, rax
 	mov rax, 4
 	mov rbx, 1
 	int 0x80
+
+	pop rcx
+	pop rbx
+	pop rax
 	ret
 
 section '.length_string' executable
