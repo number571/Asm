@@ -28,8 +28,7 @@ start:
     sti
 
 ; clear screen
-    mov ax, 0x02
-    int 0x10
+    call clear_screen
 
 ; print string
     mov ax, str_msg
@@ -52,6 +51,13 @@ start:
     call print_char
 
     call new_line
+    ret
+
+clear_screen:
+    push ax
+    mov ax, 0x02
+    int 0x10
+    pop ax
     ret
 
 new_line:
