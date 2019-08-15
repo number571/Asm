@@ -5,9 +5,16 @@ org 0x7C00 ; boot address
 _start:
     call start
 
+; segment bss
+    bss_char db 1
+
 ; segment data
     str_msg db "Operation system 0.0.1", 0
-    msg db 'hello, world!', 0
+    msg_hello db "hello, world! ", 0
+    msg_number db "Number: ", 0
+
+; constants
+    number equ 571
 
 start:
 ; null registers
@@ -32,16 +39,19 @@ start:
     call new_line
 
 ; print string
-    mov ax, msg
+    mov ax, msg_hello
     call print_string
 
-; ; set cursor
-;     call new_line
+    mov ax, msg_number
+    call print_string
 
-; ; print string
-;     mov ax, msg
-;     call print_string
+    mov ax, number
+    call print_number
 
+    mov ax, '.'
+    call print_char
+
+    call new_line
     ret
 
 new_line:
@@ -50,9 +60,72 @@ new_line:
 
     mov ah, 0x02
     add dh, 1
+    xor dl, dl
     xor bh, bh
     int 0x10
 
+    pop bx
+    pop ax
+    ret
+
+; | input:
+; ax = number
+print_number:
+    push ax
+    push bx
+    push cx
+    push dx
+    mov di, dx
+    xor cx, cx
+    .next_iter:
+        cmp ax, 0
+        je .next_iter_end
+        mov bx, 10
+        xor dx, dx
+        div bx
+        add dx, '0'
+        push dx
+        inc cx
+        jmp .next_iter
+    .next_iter_end:
+        mov dx, di
+        mov di, cx
+    .print_iter:
+        cmp cx, 0
+        je .close
+        pop ax
+        call print_char
+        dec cx
+        jmp .print_iter
+    .close:
+        mov cx, di
+        pop dx
+        add dl, cl
+        pop cx
+        pop bx
+        pop ax
+        ret
+
+; | input:
+; ax = char
+print_char:
+    push ax
+    push bx
+    push cx
+    push bp
+
+    mov [bss_char], al
+
+    mov cx, 1
+    mov bp, bss_char
+    mov bl, 0x04 ; color
+    mov ax, 0x1301
+    int 0x10
+
+    inc dl
+
+    pop bp
+    pop cx
     pop bx
     pop ax
     ret
@@ -70,9 +143,11 @@ print_string:
     call length_string             
     mov cx, ax
 
-    mov bl, 04h
+    mov bl, 0x04 ; color
     mov ax, 0x1301
     int 0x10
+
+    add dl, cl
 
     pop bp
     pop cx
