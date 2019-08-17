@@ -1,20 +1,27 @@
+format binary
 use16
+
 org 0x7C00 ; boot address
 
 ; start os
 _start:
     call start
 
-; segment bss
-    bss_char db 1
+; _segment const
+    _buffer_size equ 32
+    _default_color equ 0x07 ; white
+
+; _segment bss
+    _bss_char rb 1
+    _bss_str_cursor db 0
+    _bss_col_cursor db 0
+    _bss_buffer rb _buffer_size
+
+; _segment data
+    _start_message db "Operation system 0.0.1", 0
 
 ; segment data
-    str_msg db "Operation system 0.0.1", 0
-    msg_hello db "hello, world! ", 0
-    msg_number db "Number: ", 0
-
-; constants
-    number equ 571
+    msg_input db "> ", 0
 
 start:
 ; null registers
@@ -31,27 +38,96 @@ start:
     call clear_screen
 
 ; print string
-    mov ax, str_msg
+    mov ax, _start_message
     call print_string
 
 ; set cursor
-    call new_line
+    call newline
 
-; print string
-    mov ax, msg_hello
-    call print_string
+; loop
+    .next_iter:
+    ; print string
+        mov ax, msg_input
+        call print_string
 
-    mov ax, msg_number
-    call print_string
+    ; input string 
+        mov ax, _bss_buffer
+        call input_string
 
-    mov ax, number
-    call print_number
+    ; length string 
+        mov ax, _bss_buffer
+        call length_string
 
-    mov ax, '.'
-    call print_char
+    ; compare zero string
+        cmp ax, 0
+        je .next_iter
 
-    call new_line
+    ; print string
+        mov ax, _bss_buffer
+        call print_string
+
+        call newline
+        jmp .next_iter
     ret
+
+; | input:
+; ax = buffer
+input_string:
+    push ax
+    push bp
+    push di
+    xor di, di
+    mov bp, ax
+    .next_iter:
+        mov ah, 10h
+        int 16h
+        call print_char
+        cmp al, 0Dh
+        je .close
+        mov [bp+di], al
+        inc di
+        jmp .next_iter
+    .close:
+        mov [bp+di], byte 0
+        pop di
+        pop bp
+        pop ax
+        ret
+
+left_shift:
+    push ax
+    push bx
+    push dx
+
+    mov dl, [_bss_col_cursor]
+    dec dl
+    mov [_bss_col_cursor], dl
+    mov ah, 0x2
+    xor bx, bx
+    int 0x10
+
+    pop dx
+    pop bx
+    pop ax
+    ret
+
+backspace:
+    push ax
+    push dx
+
+    mov dl, [_bss_col_cursor]
+    cmp dl, 2
+    jle .close
+
+    call left_shift
+    xor ax, ax
+    call print_char
+    call left_shift
+
+    .close:
+        pop dx
+        pop ax
+        ret
 
 clear_screen:
     push ax
@@ -60,14 +136,20 @@ clear_screen:
     pop ax
     ret
 
-new_line:
+newline:
     push ax
     push bx
 
+    mov dh, [_bss_str_cursor]
+    inc dh
+    mov [_bss_str_cursor], dh
+
+    mov dl, [_bss_col_cursor]
+    mov dl, 0
+    mov [_bss_col_cursor], dl
+
     mov ah, 0x02
-    add dh, 1
-    xor dl, dl
-    xor bh, bh
+    xor bx, bx
     int 0x10
 
     pop bx
@@ -105,8 +187,10 @@ print_number:
         jmp .print_iter
     .close:
         mov cx, di
+        mov dl, [_bss_col_cursor]
         pop dx
         add dl, cl
+        mov [_bss_col_cursor], dl
         pop cx
         pop bx
         pop ax
@@ -120,16 +204,34 @@ print_char:
     push cx
     push bp
 
-    mov [bss_char], al
+    mov dl, [_bss_col_cursor]
+    mov [_bss_char], al
 
+    cmp al, 08h
+    je .backspace_char
+    cmp al, 0Dh
+    je .newline_char
+    jmp .default_char
+
+.newline_char:
+    call newline
+    jmp .close
+
+.backspace_char:
+    call backspace
+    jmp .close
+
+.default_char:
     mov cx, 1
-    mov bp, bss_char
-    mov bl, 0x04 ; color
+    mov bp, _bss_char
+    mov bl, _default_color
     mov ax, 0x1301
     int 0x10
 
     inc dl
+    mov [_bss_col_cursor], dl
 
+.close:
     pop bp
     pop cx
     pop bx
@@ -140,26 +242,21 @@ print_char:
 ; ax = string
 print_string:
     push ax
-    push bx
-    push cx
     push bp
-
+    push di
     mov bp, ax
-
-    call length_string             
-    mov cx, ax
-
-    mov bl, 0x04 ; color
-    mov ax, 0x1301
-    int 0x10
-
-    add dl, cl
-
-    pop bp
-    pop cx
-    pop bx
-    pop ax
-    ret
+    .next_iter:
+        cmp [bp+di], byte 0
+        je .close
+        mov ax, [bp+di]
+        call print_char
+        inc di
+        jmp .next_iter
+    .close:
+        pop di
+        pop bp 
+        pop ax
+        ret
 
 ; | input
 ; ax = string
@@ -181,5 +278,5 @@ length_string:
         pop di
         ret
 
-times(512-2-($-0x07C00)) db 0 ; align 512 bytes
+db (512-2-($-0x07C00)) dup(0) ; align 512 bytes
 db 0x55, 0xAA ; end boot section
