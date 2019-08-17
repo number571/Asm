@@ -1,9 +1,7 @@
 CC = fasm
-.PHONY: default build conv run
-default: build conv run
+.PHONY: default build run
+default: build run
 build:
 	$(CC) main.asm
-conv:
-	dd status=noxfer conv=notrunc if=main.bin of=main.flp
 run:
-	qemu-system-x86_64 -drive file=main.flp,format=raw
+	qemu-system-x86_64 -drive file=main.bin,format=raw
