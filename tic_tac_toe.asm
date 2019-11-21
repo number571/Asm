@@ -5,21 +5,22 @@ include "asmlib/fmt.inc"
 include "asmlib/sys.inc"
 
 section '.const' writeable
-	is_nothing 	equ 0
-	is_win 		equ 1
+	is_nothing	equ 0
+	is_win		equ 1
 	is_win_x	equ 2
-	is_win_o 	equ 3
-	is_draw	 	equ 4
+	is_win_o	equ 3
+	is_draw		equ 4
 
 section '.data' writeable
 	input 	db ">> ", 0
+	clear	db 0x1B, "[H", 0x1B, "[2J", 0
 	win_x	db ">> Winner: X", 0xA, 0
 	win_o 	db ">> Winner: O", 0xA, 0
 	draw	db ">> Draw", 0xA, 0
 	chars	db 0, 'X', 'O'
 	cells	db 0, 72, 76, 80, 44, 48, 52, 16, 20, 24
 	rsrvd	db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	field 	db "-------------", 0xA
+	field	db "-------------", 0xA
 			db "| 7 | 8 | 9 |", 0xA
 			db "|---|---|---|", 0xA
 			db "| 4 | 5 | 6 |", 0xA
@@ -59,6 +60,8 @@ _start:
 section '.refresh' executable
 refresh:
 	push rax
+	mov rax, clear
+	call print_string
 	mov rax, field
 	call print_string
 	pop rax
