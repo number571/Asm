@@ -1,17 +1,3 @@
-format ELF64
-public _start
-
-include "asmlib/fmt.inc"
-include "asmlib/sys.inc"
-
-section '.text' executable
-_start:
-	mov rax, 6
-	call factorial
-	call print_number
-	call print_line
-	jmp exit
-
 ; f(0) = 1
 ; f(n) = n * f(n-1)
 ; 6! = 1 * 2 * 3 * 4 * 5 * 6
@@ -24,10 +10,10 @@ factorial:
 	push rbx
 	call .factorial
 	pop rbx
-	ret
+	jmp .close
 .factorial:
-	cmp rax, 1
-	jle .return
+	cmp rax, 0
+	je .return
 	push rax
 	dec rax
 	call .factorial
