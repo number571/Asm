@@ -278,7 +278,7 @@ length_string:
         pop di
         ret
 ;--------------------------------------------------------------
-db "End code bootloader!"        
+db "End code bootloader!" ; Иногда полезно знать где конец кода.    
 ;--------------------------------------------------------------
 db (512-2-($-0x07C00)) dup(0) ; align 512 bytes
 db 0x55, 0xAA ; end boot section
