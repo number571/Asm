@@ -8,7 +8,7 @@ _start:
     call start
 
 ; _segment const
-    _buffer_size equ 32
+    _buffer_size equ 80
     _default_color equ 0x07 ; white
 
 ; _segment bss
